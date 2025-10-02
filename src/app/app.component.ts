@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AuthService } from './auth/auth.service';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  template: `
+    <app-header></app-header>
+    <router-outlet></router-outlet>
+  `
 })
 export class AppComponent {
-  title = 'library-client-spa';
+  constructor(public auth: AuthService) {}
 }
