@@ -13,7 +13,7 @@
           "options": {
             "outputPath": "dist/library-client-spa",
             "index": "src/index.html",
-            "main": "src/main.ts",
+            "browser": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json"
           },
