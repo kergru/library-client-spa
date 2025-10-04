@@ -1,0 +1,52 @@
+<div class="container mt-5">
+  @if (state$ | async; as state) {
+    @if (state.loading) {
+      <div class="alert alert-info">Benutzerdaten werden geladen...</div>
+    } @else if (state.error) {
+      <div class="alert alert-danger">{{ state.error }}</div>
+    } @else if (state.user) {
+      <div class="row">
+        <div class="col-md-8 offset-md-2">
+          <a [routerLink]="['/admin/users']" class="btn btn-secondary mb-4">← Zurück zur Übersicht</a>
+
+          <div class="card mb-4">
+            <div class="card-header">
+              <h1 class="h4 mb-0">Benutzerdetails</h1>
+            </div>
+            <div class="card-body">
+              <p><strong>Benutzername:</strong> {{ state.user.userName }}</p>
+              <p><strong>Name:</strong> {{ state.user.firstName + ' ' + state.user.lastName }}</p>
+              <p><strong>Email:</strong> {{ state.user.email || 'Keine Angabe' }}</p>
+            </div>
+          </div>
+
+          <!-- Loans-Bereich -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="h5 mb-0">Ausgeliehene Bücher</h2>
+            </div>
+            <div class="card-body">
+              @if (state.user?.loans?.length) {
+                <ul class="list-group">
+                  @for (loan of state.user.loans; track loan.book) {
+                    <li class="list-group-item" >
+                      <div>
+                        <strong>{{ loan.book.title }}</strong>
+                        <div class="text-muted small">
+                          Ausgeliehen am: {{ loan.borrowedAt | date:'dd.MM.yyyy' }}<br>
+                          Fällig am: {{ loan.returnedAt | date:'dd.MM.yyyy' }}
+                        </div>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <div class="text-muted">Keine Bücher ausgeliehen.</div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

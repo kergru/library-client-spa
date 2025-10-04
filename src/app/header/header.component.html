@@ -1,0 +1,49 @@
+<header>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <!-- Logo -->
+      <a class="navbar-brand" routerLink="/">Bibliothek</a>
+
+      <!-- Navbar toggler für mobile Ansicht -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <!-- Bücherliste -->
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/books">Bücherliste</a>
+          </li>
+
+          <!-- Nur für Bibliothekare sichtbar -->
+          @if (auth.hasRole('LIBRARIAN')) {
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/admin/users">Benutzerliste</a>
+            </li>
+          }
+        </ul>
+
+        <!-- Benutzerbereich -->
+        <ul class="navbar-nav ms-auto">
+          @if (auth.isLoggedIn()) {
+            <li class="nav-item d-flex align-items-center">
+              <!-- Nur für User und nicht für Bibliothekare sichtbar -->
+              @if (!auth.hasRole('LIBRARIAN')) {
+                <li class="nav-item">
+                  <a class="nav-link" routerLink="/me">{{ auth.currentUser()?.username || 'Benutzer' }}</a>
+                </li>
+              }
+              <button (click)="auth.logout()" class="btn btn-outline-light btn-sm">Abmelden</button>
+            </li>
+          } @else {
+            <li class="nav-item">
+              <a routerLink="/login" class="btn btn-outline-light btn-sm">Anmelden</a>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>

@@ -7,10 +7,26 @@ export interface Book {
   language?: string;
   pages?: number;
   description?: string;
-  loanStatus?: LoanStatusDto;
+  loanStatus?: LoanStatus;
+}
+
+export interface LoanStatus {
+  available: boolean;
 }
 
 export interface LoanStatusDto {
   status: string;
   until?: string;
+}
+
+export interface BookListState {
+  loading: boolean;
+  error: string | null;
+  books: Book[];
+}
+
+export interface BookDetailState {
+  loading: boolean;
+  error: string | null;
+  book: Book | null;
 }

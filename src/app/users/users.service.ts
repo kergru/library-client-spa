@@ -1,19 +1,33 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from './user.model';
+import { map, startWith } from 'rxjs/operators';
+import { UserListState, UserDetailState, User } from './user.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
-  private base = environment.apiBaseUrl + '/admin/users';
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
-  getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(this.base);
+  private baseUrl = environment.apiBaseUrl + '/admin/users';
+
+  getUsers(): Observable<UserListState> {
+    return this.http.get<User[]>(this.baseUrl)
+    .pipe(
+      map(users => ({ loading: false, error: null, users })),
+      startWith({ loading: true, error: null, users: [] }),
+    );
   }
 
-  getUser(id: string): Observable<User> {
-    return this.http.get<User>(`${this.base}/${id}`);
+  getUser(id: string): Observable<UserDetailState> {
+    return this.http.get<User>(`${this.baseUrl}/${id}`)
+    .pipe(
+      map(user => ({ loading: false, error: null, user })),
+      startWith<UserDetailState>({
+        loading: true,
+        error: null,
+        user: null
+      })
+    );
   }
 }

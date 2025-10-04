@@ -1,7 +1,15 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-home',
-  template: '<h1>Library SPA</h1><p>Willkommen — nutze die Navigation.</p>'
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css']
 })
-export class HomeComponent {}
+export class HomeComponent {
+  // könnte z. B. später aus AuthService kommen
+  isAdmin = true;
+}

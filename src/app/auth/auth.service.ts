@@ -1,39 +1,96 @@
-import { Injectable } from '@angular/core';
-import { OAuthService, AuthConfig } from 'angular-oauth2-oidc';
-import { environment } from '../../environments/environment';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { OAuthService } from 'angular-oauth2-oidc';
+import { authConfig } from './auth.config';
+
+export interface OidcClaims {
+  sub: string;
+  preferred_username?: string;
+  email?: string;
+  realm_access?: { roles: string[] };
+  resource_access?: { [resource: string]: { roles: string[] } };
+  [key: string]: unknown;
+}
+
+export interface User {
+  username: string;
+  email?: string;
+  roles: string[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private oauth = inject(OAuthService);
 
-  private authConfig: AuthConfig = {
-    issuer: environment.oidc.issuer,
-    clientId: environment.oidc.clientId,
-    redirectUri: environment.oidc.redirectUri,
-    responseType: environment.oidc.responseType,
-    scope: environment.oidc.scope,
-    showDebugInformation: environment.oidc.showDebugInformation
-  };
+  private _currentUser = signal<User | null>(null);
+  readonly currentUser = this._currentUser.asReadonly();
 
-  constructor(private oauth: OAuthService) {
-    this.oauth.configure(this.authConfig);
-    this.oauth.loadDiscoveryDocumentAndTryLogin();
+  readonly isLoggedIn = computed(() => this.oauth.hasValidAccessToken());
+
+  constructor() {
+    this.oauth.configure(authConfig);
   }
 
-  login() { this.oauth.initLoginFlow(); }
-  logout() { this.oauth.logOut(); }
+  async initLoginFlow(): Promise<void> {
+    try {
+      const loggedIn = await this.oauth.loadDiscoveryDocumentAndLogin();
 
-  isLoggedIn(): boolean { return this.oauth.hasValidAccessToken(); }
+      if (loggedIn) {
+        this.updateUserFromClaims();
+      } else {
+        this.oauth.initLoginFlow();
+      }
+    } catch (err) {
+      console.error('OIDC-Login fehlgeschlagen', err);
+      this.oauth.initLoginFlow();
+    }
 
-  getAccessToken() { return this.oauth.getAccessToken(); }
+    this.oauth.events.subscribe(e => {
+      if (e.type === 'token_received' || e.type === 'token_refreshed') {
+        this.updateUserFromClaims();
+      }
+      if (e.type === 'logout') {
+        this._currentUser.set(null);
+      }
+    });
+
+    this.oauth.setupAutomaticSilentRefresh();
+
+    if (this.oauth.hasValidAccessToken()) {
+      this.updateUserFromClaims();
+    }
+  }
+
+  logout(): void {
+    this.oauth.logOut();
+    this._currentUser.set(null);
+  }
+
+  getAccessToken(): string | null {
+    return this.oauth.getAccessToken();
+  }
 
   hasRole(role: string): boolean {
-    const claims: any = this.oauth.getIdentityClaims() || {};
-    const realmRoles = claims['realm_access']?.roles || [];
-    if (realmRoles.includes(role)) return true;
-    const resourceAccess = claims['resource_access'] || {};
-    for (const k of Object.keys(resourceAccess || {})) {
-      if (resourceAccess[k]?.roles?.includes(role)) return true;
+    return this._currentUser()?.roles.includes(role) ?? false;
+  }
+
+  private updateUserFromClaims(): void {
+    const claims = this.oauth.getIdentityClaims() as OidcClaims | null;
+    if (!claims) {
+      this._currentUser.set(null);
+      return;
     }
-    return false;
+
+    const roles: string[] = [
+      ...(claims.realm_access?.roles ?? []),
+      ...Object.values(claims.resource_access ?? {}).flatMap(r => r.roles ?? [])
+    ];
+
+    const user: User = {
+      username: claims.preferred_username ?? claims.sub,
+      email: claims.email,
+      roles
+    };
+
+    this._currentUser.set(user);
   }
 }

@@ -1,0 +1,41 @@
+<div class="home-container">
+  <div class="welcome-card">
+    <h1>Willkommen in der Bibliothek</h1>
+
+    <div class="welcome-content">
+      <p class="welcome-text">
+        Entdecken Sie unsere umfangreiche Sammlung an Büchern und verwalten Sie
+        Ihre Ausleihen bequem online.
+      </p>
+
+      <div class="cta-buttons">
+        <a routerLink="/books" class="cta-button primary">
+          Bücher durchsuchen
+        </a>
+
+        @if (isAdmin) {
+          <a routerLink="/admin/users" class="cta-button secondary">
+            Benutzer verwalten
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <h3>Umfangreiche Auswahl</h3>
+      <p>Tausende Bücher aus verschiedenen Kategorien</p>
+    </div>
+
+    <div class="feature">
+      <h3>Einfache Ausleihe</h3>
+      <p>Bücher bequem von zu Hause aus ausleihen</p>
+    </div>
+
+    <div class="feature">
+      <h3>Persönliche Verwaltung</h3>
+      <p>Behalten Sie den Überblick über Ihre Ausleihen</p>
+    </div>
+  </div>
+</div>

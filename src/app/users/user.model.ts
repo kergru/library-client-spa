@@ -1,6 +1,27 @@
+import {Book} from "../books/book.model";
+
 export interface User {
-  id: string;
-  username: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
   email?: string;
-  roles?: string[];
+  loans?: Loan[];
+}
+
+export interface Loan {
+  book: Book;
+  borrowedAt: Date;
+  returnedAt: Date;
+}
+
+export interface UserListState {
+  loading: boolean;
+  error: string | null;
+  users: User[];
+}
+
+export interface UserDetailState {
+  loading: boolean;
+  error: string | null;
+  user: User | null;
 }
