@@ -7,8 +7,9 @@
     } @else if (state.user) {
       <div class="row">
         <div class="col-md-8 offset-md-2">
-          <a [routerLink]="['/admin/users']" class="btn btn-secondary mb-4">← Zurück zur Übersicht</a>
-
+          @if (auth.hasRole('LIBRARIAN')) {
+            <a [routerLink]="['/admin/users']" class="btn btn-secondary mb-4">← Zurück zur Übersicht</a>
+          }
           <div class="card mb-4">
             <div class="card-header">
               <h1 class="h4 mb-0">Benutzerdetails</h1>
@@ -26,7 +27,7 @@
               <h2 class="h5 mb-0">Ausgeliehene Bücher</h2>
             </div>
             <div class="card-body">
-              @if (state.user?.loans?.length) {
+              @if (state.user.loans?.length) {
                 <ul class="list-group">
                   @for (loan of state.user.loans; track loan.book) {
                     <li class="list-group-item" >

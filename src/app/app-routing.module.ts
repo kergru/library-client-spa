@@ -13,6 +13,8 @@ import { roleGuard } from './auth/role.guard';
 export const appRoutes: Routes = [
   { path: '', component: HomeComponent },
 
+  { path: 'me', component: UserDetailComponent, canActivate: [authGuard] },
+
   // Bücher: nur Login notwendig
   { path: 'books', component: BooksListComponent, canActivate: [authGuard] },
   { path: 'books/:isbn', component: BookDetailComponent, canActivate: [authGuard] },

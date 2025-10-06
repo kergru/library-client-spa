@@ -9,10 +9,8 @@ import { environment } from '../../environments/environment';
 export class UsersService {
   private http = inject(HttpClient);
 
-  private baseUrl = environment.apiBaseUrl + '/admin/users';
-
   getUsers(): Observable<UserListState> {
-    return this.http.get<User[]>(this.baseUrl)
+    return this.http.get<User[]>(environment.apiBaseUrl + '/admin/users')
     .pipe(
       map(users => ({ loading: false, error: null, users })),
       startWith({ loading: true, error: null, users: [] }),
@@ -20,7 +18,11 @@ export class UsersService {
   }
 
   getUser(id: string): Observable<UserDetailState> {
-    return this.http.get<User>(`${this.baseUrl}/${id}`)
+    var url = environment.apiBaseUrl + '/admin/users/${id}';
+    if(id === 'me') {
+      url = environment.apiBaseUrl + '/me';
+    }
+    return this.http.get<User>(`${url}`)
     .pipe(
       map(user => ({ loading: false, error: null, user })),
       startWith<UserDetailState>({
