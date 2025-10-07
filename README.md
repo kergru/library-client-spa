@@ -3,7 +3,7 @@
 This is a simple example of an Angular SPA that uses the OAuth2 Authorization Code Flow with PKCE to authenticate with a Keycloak server.
 
 
-## Architecture
+## Architecture / Flow Diagram
 
 ```mermaid
 flowchart BT
