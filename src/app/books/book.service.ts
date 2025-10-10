@@ -1,23 +1,29 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, startWith, catchError } from 'rxjs/operators';
 import { Book, BookListState, BookDetailState } from './book.model';
+import { PageResponse } from '../page/page.model';
 import { environment } from '../../environments/environment';
-import {UserDetailState} from "../users/user.model";
 
 @Injectable({ providedIn: 'root' })
 export class BookService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiBaseUrl + '/books';
 
-  getBooks(): Observable<BookListState> {
-    return this.http.get<Book[]>(this.baseUrl)
+  getBooks(searchString: string = '', page: number = 0, size: number = 10, sortBy: string = 'title'): Observable<BookListState> {
+    const params = new HttpParams()
+                                    .set('searchString', searchString)
+                                    .set('page', page)
+                                    .set('size', size)
+                                    .set('sortBy', sortBy);
+
+    return this.http.get<PageResponse<Book>>(this.baseUrl, { params })
     .pipe(
-      map(books => ({ loading: false, error: null, books })),
-      startWith({ loading: true, error: null, books: [] }),
+      map(pageData => ({ loading: false, error: null, page: pageData })),
+      startWith({ loading: true, error: null, page: null }),
       catchError(err =>
-        of({ loading: false, error: err.message, books: [] })
+        of({ loading: false, error: err.message, page: null })
       )
     );
   }

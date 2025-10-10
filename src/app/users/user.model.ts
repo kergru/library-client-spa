@@ -1,4 +1,5 @@
 import {Book} from "../books/book.model";
+import {PageResponse} from "../page/page.model";
 
 export interface User {
   firstName: string;
@@ -17,7 +18,7 @@ export interface Loan {
 export interface UserListState {
   loading: boolean;
   error: string | null;
-  users: User[];
+  page: PageResponse<User> | null;
 }
 
 export interface UserDetailState {

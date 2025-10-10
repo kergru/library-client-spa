@@ -5,65 +5,93 @@
     </div>
   </div>
 
-  <!-- Suchleiste -->
-  <!--
+  <!-- 🔍 Suchleiste -->
   <div class="row mb-4">
     <div class="col-md-6">
       <form (ngSubmit)="onSearch()" class="search-form">
         <div class="input-group">
-          <input type="text"
-                 class="form-control"
-                 [(ngModel)]="searchTerm"
-                 name="search"
-                 placeholder="Suche nach Titel, Autor oder ISBN..." />
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="searchTerm"
+            name="search"
+            placeholder="Suche nach Titel, Autor oder ISBN..."
+          />
           <button class="btn btn-primary" type="submit">Suchen</button>
         </div>
       </form>
     </div>
   </div>
-  -->
-  <!-- Bücherliste -->
-  @if (state$ | async; as state) {
-    @if (state.loading) {
+
+  <!-- 📚 Bücherliste -->
+  @if (state$ | async; as s) {
+    @if (s.loading) {
       <div class="alert alert-info">Bücher werden geladen...</div>
-    } @else if (state.error) {
-      <div class="alert alert-danger">Fehler: {{ state.error }}</div>
+    } @else if (s.error) {
+      <div class="alert alert-danger">Fehler: {{ s.error }}</div>
+    } @else if (s.page && s.page.content.length > 0) {
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th>Titel</th>
+          <th>Autor</th>
+          <th>ISBN</th>
+          <th>Status</th>
+          <th>Aktionen</th>
+        </tr>
+        </thead>
+        <tbody>
+          @for (book of s.page.content; track book.isbn) {
+            <tr>
+              <td>{{ book.title || 'Ohne Titel' }}</td>
+              <td>{{ book.author || 'Unbekannter Autor' }}</td>
+              <td>{{ book.isbn }}</td>
+              <td>
+                @if (book.loanStatus?.available) {
+                  <span class="badge bg-success">Verfügbar</span>
+                } @else {
+                  <span class="badge bg-danger">Ausgeliehen</span>
+                }
+              </td>
+              <td>
+                <a
+                  [routerLink]="['/books', book.isbn]"
+                  class="btn btn-sm btn-outline-primary"
+                >
+                  Details
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- 📄 Pagination -->
+      <nav aria-label="Seiten-Navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+
+          <!-- ⏪ Zurück -->
+          <li class="page-item" [class.disabled]="s.page.first">
+            <a class="page-link" (click)="changePage(s.page.number - 1)">&laquo;</a>
+          </li>
+
+          <!-- Seitenzahlen -->
+          <li
+            *ngFor="let p of getPagesArray(s.page.totalPages); let i = index"
+            class="page-item"
+            [class.active]="i === s.page.number"
+          >
+            <a class="page-link" (click)="changePage(i)">{{ i + 1 }}</a>
+          </li>
+
+          <!-- ⏩ Weiter -->
+          <li class="page-item" [class.disabled]="s.page.last">
+            <a class="page-link" (click)="changePage(s.page.number + 1)">&raquo;</a>
+          </li>
+        </ul>
+      </nav>
     } @else {
-      @if (state.books.length > 0) {
-        <table class="table table-striped">
-          <thead>
-          <tr>
-            <th>Titel</th>
-            <th>Autor</th>
-            <th>ISBN</th>
-            <th>Aktionen</th>
-          </tr>
-          </thead>
-          <tbody>
-            @for (book of state.books; track book.isbn) {
-              <tr>
-                <td>{{ book.title || 'Ohne Titel' }}</td>
-                <td>{{ book.author || 'Unbekannter Autor' }}</td>
-                <td>{{ book.isbn }}</td>
-                <td>
-                  @if (book.loanStatus?.available) {
-                    <span class="badge bg-success">Verfügbar</span>
-                  } @else {
-                    <span class="badge bg-danger">Ausgeliehen</span>
-                  }
-                </td>
-                <td>
-                  <a [routerLink]="['/books', book.isbn]" class="btn btn-sm btn-outline-primary">
-                    Details
-                  </a>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      } @else {
-        <div class="alert alert-warning">Keine Bücher gefunden.</div>
-      }
+      <div class="alert alert-warning">Keine Bücher gefunden.</div>
     }
   }
 </div>

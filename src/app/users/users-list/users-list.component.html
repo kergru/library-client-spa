@@ -5,40 +5,87 @@
     </div>
   </div>
 
-  @if (state$ | async; as state) {
-    @if (state.loading) {
+  <!-- 🔍 Suchleiste -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <form (ngSubmit)="onSearch()" class="search-form">
+        <div class="input-group">
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="searchTerm"
+            name="search"
+            placeholder="Suche nach Benutzername, E-Mail..."
+          />
+          <button class="btn btn-primary" type="submit">Suchen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 📋 Benutzerliste -->
+  @if (state$ | async; as s) {
+    @if (s.loading) {
       <div class="alert alert-info">Benutzer werden geladen...</div>
-    } @else if (state.error) {
-      <div class="alert alert-danger">{{ state.error }}</div>
+    } @else if (s.error) {
+      <div class="alert alert-danger">Fehler: {{ s.error }}</div>
+    } @else if (s.page && s.page.content.length > 0) {
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th>Benutzername</th>
+          <th>Vorname</th>
+          <th>Nachname</th>
+          <th>E-Mail</th>
+          <th>Aktionen</th>
+        </tr>
+        </thead>
+        <tbody>
+          @for (user of s.page.content; track user.userName) {
+            <tr>
+              <td>{{ user.userName }}</td>
+              <td>{{ user.firstName }}</td>
+              <td>{{ user.lastName }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <a
+                  [routerLink]="['/admin/users', user.userName]"
+                  class="btn btn-sm btn-outline-primary"
+                >
+                  Details
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- 📄 Pagination -->
+      <nav aria-label="Seiten-Navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+
+          <!-- ⏪ Zurück -->
+          <li class="page-item" [class.disabled]="s.page.first">
+            <a class="page-link" (click)="changePage(s.page.number - 1)">&laquo;</a>
+          </li>
+
+          <!-- Seitenzahlen -->
+          <li
+            *ngFor="let p of getPagesArray(s.page.totalPages); let i = index"
+            class="page-item"
+            [class.active]="i === s.page.number"
+          >
+            <a class="page-link" (click)="changePage(i)">{{ i + 1 }}</a>
+          </li>
+
+          <!-- ⏩ Weiter -->
+          <li class="page-item" [class.disabled]="s.page.last">
+            <a class="page-link" (click)="changePage(s.page.number + 1)">&raquo;</a>
+          </li>
+        </ul>
+      </nav>
     } @else {
-      @if (state.users.length > 0) {
-        <table class="table table-striped">
-          <thead>
-          <tr>
-            <th>Benutzername</th>
-            <th>Vorname</th>
-            <th>Nachname</th>
-            <th>E-Mail</th>
-            <th>Aktionen</th>
-          </tr>
-          </thead>
-          <tbody>
-            @for (user of state.users; track user.userName) {
-              <tr>
-                <td>{{ user.userName }}</td>
-                <td>{{ user.firstName }}</td>
-                <td>{{ user.lastName }}</td>
-                <td>{{ user.email }}</td>
-                <td>
-                  <a [routerLink]="['/admin/users', user.userName]" class="btn btn-sm btn-outline-primary">Details</a>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      } @else {
-        <div class="alert alert-warning">Keine Benutzer gefunden.</div>
-      }
+      <div class="alert alert-warning">Keine Benutzer gefunden.</div>
     }
   }
 </div>

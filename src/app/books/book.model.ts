@@ -1,3 +1,5 @@
+import { PageResponse } from "../page/page.model";
+
 export interface Book {
   isbn: string;
   title: string;
@@ -22,7 +24,7 @@ export interface LoanStatusDto {
 export interface BookListState {
   loading: boolean;
   error: string | null;
-  books: Book[];
+  page: PageResponse<Book> | null;
 }
 
 export interface BookDetailState {
