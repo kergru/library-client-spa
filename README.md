@@ -1,49 +1,3 @@
-# Angular SPA Library Client - Example OAuth2 Authorization Code Flow
-
-This is a simple example of an Angular SPA that uses the OAuth2 Authorization Code Flow with PKCE to authenticate with a Keycloak server.
-
-
-## Architecture Diagram
-
-```mermaid
-flowchart BT
-    subgraph SPA["🧭 Angular SPA – Library Client"]
-        SPA1["Login via OIDC + PKCE"]
-        SPA2["Store Access Token"]
-        SPA3["Call REST APIs on Library Frontend Service"]
-        SPA4["Request User Info from OIDC Endpoint"]
-    end
-
-    subgraph FRONTEND["💻 Library Frontend Service (Reactive Resource Server + Gateway)"]
-        FE1["Validate JWT"]
-        FE2["Forward Request to Library Backend Server (Bearer Token)"]
-        FE3["Return JSON to SPA"]
-        FE4["Request User Info from OIDC Endpoint"]
-    end
-
-    subgraph BACKEND["⚙️ Library Backend Service (Reactive Resource Server)"]
-        BE1["Validate JWT via JWKS"]
-        BE2["Perform Business Logic"]
-        BE3["Return JSON"]
-    end
-
-    subgraph AUTH["🛡️ Keycloak (Authorization Server)"]
-        AS1["/authorize + /token"]
-        AS2["JWKS Endpoint"]
-        AS3["/userinfo (User Info Endpoint)"]
-    end
-
-    SPA -->|"Authorization Code"| AUTH
-    SPA -->|"Bearer Token"| FRONTEND
-    FRONTEND -->|"Bearer Token"| BACKEND
-    FRONTEND -->|"Validate JWT via JWKS"| AUTH
-    FRONTEND -->|"Request User Info"| AUTH
-    BACKEND -->|"Validate via JWKS"| AUTH
-    BACKEND -->|"JSON"| FRONTEND
-    FRONTEND -->|"JSON"| SPA
-    SPA -->|"User Info"| AUTH
-```
-
 ## Sequence Diagram
 ```mermaid
 sequenceDiagram
@@ -53,75 +7,44 @@ participant K as Keycloak
 participant B as Library Backend Service
 
     rect rgb(240, 248, 255)
-    note over A: 1. User Login
-    A->>K: Redirect to Keycloak Login
-    K-->>A: Authentication Form
-    A->>K: Submit Credentials
-    K-->>A: Redirect with Authorization Code
-    A->>K: Exchange Code for Tokens
-    K-->>A: ID Token + Access Token
+    note over A: 1. PKCE Flow - User Login
+    A->>A: Generate code_verifier & code_challenge
+    A->>K: GET /authorize
+    note right of A: response_type=code
+    note right of A: code_challenge=...
+    note right of A: code_challenge_method=S256
+    K-->>A: 302 Redirect to Login Page
+    A->>K: POST /login (credentials)
+    K-->>A: 302 Redirect with Authorization Code
+    A->>K: POST /token
+    note right of A: grant_type=authorization_code
+    note right of A: code=...
+    note right of A: code_verifier=...
+    note right of A: redirect_uri=...
+    K-->>A: ID Token + Access Token + Refresh Token
     end
 
     rect rgb(255, 240, 245)
     note over A,F: 2. Access Protected Resource
-    A->>F: Request /api/resource (with Bearer Token)
-    F->>K: Validate Token (JWT)
-    K-->>F: Token Validation Response
-    F->>B: Forward Request (with same Bearer Token)
-    B->>K: Validate Token (JWT)
-    K-->>B: Token Validation Response
-    B-->>F: Resource Data
-    F-->>A: Resource Data
+    A->>F: GET /api/resource
+    note right of A: Authorization: Bearer <access_token>
+    F->>K: GET /certs (JWKS)
+    K-->>F: Public Key
+    F->>F: Validate JWT Signature
+    F->>B: Forward Request
+    note right of F: Authorization: Bearer <access_token>
+    B->>K: GET /certs (JWKS)
+    K-->>B: Public Key
+    B->>B: Validate JWT & Extract Roles
+    B-->>F: 200 OK (Resource Data)
+    F-->>A: 200 OK (Resource Data)
     end
 
     rect rgb(230, 255, 230)
-        note over A,B: 3. Token Relay Flow
-        A->>F: Request with Bearer Token
-        F->>F: Extract Token from SecurityContext
-        F->>B: Forward Request with same Token
-        B->>B: Validate Token & Extract Roles
-        B-->>F: Response with Data
-        F-->>A: Forward Response
+    note over A: 3. Token Refresh Flow
+    A->>K: POST /token
+    note right of A: grant_type=refresh_token
+    note right of A: refresh_token=...
+    note right of A: client_id=...
+    K-->>A: New Access Token + Refresh Token
     end
-```
-
-### Key Components in the Flow:
-**Angular SPA:**
-* Handles user authentication via Keycloak
-* Stores tokens securely (HttpOnly cookies recommended)
-* Attaches access token to API requests
-
-**Library Frontend Service (Spring WebFlux):**
-* Validates JWT tokens using Keycloak's public key
-* Forwards requests to backend with the same token
-* Handles CORS for the SPA
-* Enforces role-based access control
-
-**Library Backend Service (Spring WebFlux):**
-* Validates JWT tokens
-* Processes business logic based on user roles
-* Returns protected resources
-
-**Keycloak:**
-* Acts as the OAuth2/OpenID Connect provider
-* Issues and validates JWT tokens
-* Manages users and roles
-
-### Security Flow Details:
-**Authentication:**
-* SPA redirects to Keycloak for login
-* After successful authentication, SPA receives tokens
-* Access token is stored securely and sent with each request
-
-**Authorization:**
-* Frontend service validates the token on each request
-* Roles are extracted from the JWT's realm_access.roles claim
-* Backend service re-validates the token and enforces authorization
-
-**Token Relay:**
-* Frontend service forwards the original token to backend services
-* No token exchange needed as both services trust the same Keycloak realm
-* Token contains all necessary claims for authorization
-
-This architecture follows the OAuth 2.0 Authorization Code Flow with PKCE, which is the recommended approach for SPAs. 
-The token relay pattern ensures that the backend service receives the original user context.
