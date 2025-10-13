@@ -7,21 +7,21 @@ This is a simple example of an Angular SPA that uses the OAuth2 Authorization Co
 
 ```mermaid
 flowchart BT
-    subgraph SPA["🧭 Angular SPA – library-client-spa"]
+    subgraph SPA["🧭 Angular SPA – Library Client"]
         SPA1["Login via OIDC + PKCE"]
         SPA2["Store Access Token"]
-        SPA3["Call REST APIs on library-frontend"]
+        SPA3["Call REST APIs on Library Frontend Service"]
         SPA4["Request User Info from OIDC Endpoint"]
     end
 
-    subgraph FRONTEND["💻 library-frontend (Reactive Resource Server + Gateway)"]
+    subgraph FRONTEND["💻 Library Frontend Service (Reactive Resource Server + Gateway)"]
         FE1["Validate JWT"]
-        FE2["Forward Request to library-backend (Bearer Token)"]
+        FE2["Forward Request to Library Backend Server (Bearer Token)"]
         FE3["Return JSON to SPA"]
         FE4["Request User Info from OIDC Endpoint"]
     end
 
-    subgraph BACKEND["⚙️ library-backend (Reactive Resource Server)"]
+    subgraph BACKEND["⚙️ Library Backend Service (Reactive Resource Server)"]
         BE1["Validate JWT via JWKS"]
         BE2["Perform Business Logic"]
         BE3["Return JSON"]
@@ -48,9 +48,9 @@ flowchart BT
 ```mermaid
 sequenceDiagram
 participant A as Angular SPA
-participant F as Frontend Service (Spring WebFlux)
+participant F as Library Frontend Service
 participant K as Keycloak
-participant B as Backend Service
+participant B as Library Backend Service
 
     rect rgb(240, 248, 255)
     note over A: 1. User Login
