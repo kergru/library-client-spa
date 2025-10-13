@@ -35,4 +35,8 @@ export class BookService {
       startWith({ loading: true, error: null, book: null })
     );
   }
+
+  borrowBook(isbn: string): Observable<any> {
+    return this.http.post<any>(environment.apiBaseUrl +`/me/borrowBook/${encodeURIComponent(isbn)}`, {});
+  }
 }

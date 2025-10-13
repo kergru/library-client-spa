@@ -25,9 +25,11 @@ export class UsersService {
   }
 
   getUser(id: string): Observable<UserDetailState> {
-    var url = environment.apiBaseUrl + '/admin/users/${id}';
+    var url = "";
     if(id === 'me') {
       url = environment.apiBaseUrl + '/me';
+    } else {
+      url = environment.apiBaseUrl + '/admin/users/' + id;
     }
     return this.http.get<User>(`${url}`)
     .pipe(

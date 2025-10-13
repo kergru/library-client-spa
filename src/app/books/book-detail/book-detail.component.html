@@ -8,13 +8,12 @@
       <div class="row">
         <div class="col-md-8 offset-md-2">
 
-          <!-- Zurück-Button -->
           <a [routerLink]="['/books']" class="btn btn-secondary mb-4">← Zurück zur Übersicht</a>
 
-          <!-- Buchdetails in einer Card -->
           <div class="card book-details">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h1 class="h3 mb-0">{{ state.book.title || 'Unbekannter Titel' }}</h1>
+
               @if (state.book.loanStatus?.available) {
                 <span class="badge bg-success">Verfügbar</span>
               } @else {
@@ -35,7 +34,42 @@
                 <p class="text-muted">Keine Beschreibung verfügbar.</p>
               }
             </div>
+            <div class="mx-3 mb-2">
+              @if (borrowResult === 'success') {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                  Buch wurde erfolgreich ausgeliehen.
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              }
+              @if (borrowResult === 'conflict') {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  Dieses Buch ist bereits ausgeliehen.
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              }
+              @if (borrowResult === 'unknown') {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  Ein unbekannter Fehler ist aufgetreten.
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              }
+            </div>
+
+            <div class="card-footer d-flex justify-content-end">
+              <button
+                type="button"
+                class="btn"
+                [class.btn-primary]="state.book.loanStatus?.available"
+                [class.btn-secondary]="!state.book.loanStatus?.available"
+                (click)="onBorrow(state.book!)"
+                [disabled]="!state.book.loanStatus?.available || borrowBusy || auth.hasRole('LIBRARIAN')">
+                @if (borrowBusy) { Wird ausgeliehen… } @else {
+                  {{ state.book.loanStatus?.available ? 'Buch ausleihen' : 'Nicht verfügbar' }}
+                }
+              </button>
+            </div>
           </div>
+
         </div>
       </div>
     }

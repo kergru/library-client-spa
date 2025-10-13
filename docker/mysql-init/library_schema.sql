@@ -11,44 +11,47 @@ FLUSH PRIVILEGES;
 USE library;
 
 -- users
-CREATE TABLE users (
-   id         BIGINT       NOT NULL,
-   username   VARCHAR(100) NOT NULL,
-   firstname  VARCHAR(100) NOT NULL,
-   lastname   VARCHAR(100) NOT NULL,
-   email      VARCHAR(255) NOT NULL,
-   PRIMARY KEY (id),
-   UNIQUE KEY uk_users_username (username),
-   UNIQUE KEY uk_users_email (email)
+CREATE TABLE users
+(
+    id        BIGINT       NOT NULL AUTO_INCREMENT,
+    username  VARCHAR(100) NOT NULL,
+    firstname VARCHAR(100) NOT NULL,
+    lastname  VARCHAR(100) NOT NULL,
+    email     VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_users_username (username),
+    UNIQUE KEY uk_users_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- books
-CREATE TABLE books (
-   id           BIGINT        NOT NULL,
-   isbn         VARCHAR(32)   NOT NULL,
-   title        VARCHAR(255)  NOT NULL,
-   author       VARCHAR(255)  NOT NULL,
-   published_at INT           NOT NULL,
-   publisher    VARCHAR(255)  NOT NULL,
-   language     VARCHAR(32)   NOT NULL,
-   description  TEXT          NOT NULL,
-   pages        INT           NOT NULL,
-   PRIMARY KEY (id),
-   KEY idx_books_isbn (isbn)
+CREATE TABLE books
+(
+    id           BIGINT       NOT NULL AUTO_INCREMENT,
+    isbn         VARCHAR(32)  NOT NULL,
+    title        VARCHAR(255) NOT NULL,
+    author       VARCHAR(255) NOT NULL,
+    published_at INT          NOT NULL,
+    publisher    VARCHAR(255) NOT NULL,
+    language     VARCHAR(32)  NOT NULL,
+    description  TEXT         NOT NULL,
+    pages        INT          NOT NULL,
+    PRIMARY KEY (id),
+    KEY          idx_books_isbn(isbn)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- loans
-CREATE TABLE loans (
-   id          BIGINT       NOT NULL,
-   user_id     BIGINT       NOT NULL,
-   book_id     BIGINT       NOT NULL,
-   borrowed_at TIMESTAMP(6) NOT NULL,
-   returned_at TIMESTAMP(6) NULL,
-   PRIMARY KEY (id),
-   KEY idx_loans_user (user_id),
-   KEY idx_loans_book (book_id),
-   CONSTRAINT fk_loans_user FOREIGN KEY (user_id) REFERENCES users(id),
-   CONSTRAINT fk_loans_book FOREIGN KEY (book_id) REFERENCES books(id)
+CREATE TABLE loans
+(
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    user_id     BIGINT       NOT NULL,
+    book_id     BIGINT       NOT NULL,
+    borrowed_at TIMESTAMP(6) NOT NULL,
+    returned_at TIMESTAMP(6) NULL,
+    PRIMARY KEY (id),
+    KEY         idx_loans_user(user_id),
+    KEY         idx_loans_book(book_id),
+    CONSTRAINT fk_loans_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT fk_loans_book FOREIGN KEY (book_id) REFERENCES books (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Seed-Daten
